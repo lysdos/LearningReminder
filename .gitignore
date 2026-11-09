@@ -1,0 +1,29 @@
+# Gradle
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# Android SDK 路径（本机专属，不入库）
+local.properties
+
+# IDE
+.idea/
+*.iml
+*.hprof
+.kotlin/
+
+# 构建产物
+captures/
+.externalNativeBuild/
+.cxx/
+*.apk
+*.aab
+*.ap_
+*.dex
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# 日志
+*.log

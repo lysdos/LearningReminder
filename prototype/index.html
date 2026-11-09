@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>学习提醒原型</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+
+    :root {
+      --radius: 8px;
+      --accent: #b36b68;
+      --bg: #fffdfc;
+      --surface: #fffdfc;
+      --surface-sm: #f7f4ef;
+      --line: #ece6e0;
+      --muted: #6b5f5a;
+      --text-strong: #221a17;
+    }
+
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      color: #221a17;
+      font-family: system-ui, -apple-system, "Segoe UI", Noto Sans, sans-serif;
+      background: linear-gradient(180deg, #f7f4ef 0%, #f4d8c2 100%);
+    }
+
+    #app {
+      max-width: 424px;
+      margin: 20px auto;
+      padding: 16px;
+      background: #fffdfc;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(34, 26, 23, 0.08);
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand {
+      color: #b36b68;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      margin: 0;
+      font-size: 1.25rem;
+    }
+
+    .subtitle {
+      color: #6b5f5a;
+      font-size: 0.92rem;
+      margin: 4px 0 0;
+      line-height: 1.5;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .screen {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    .panel {
+      background: #fffdfc;
+      border: 1px solid #ece6e0;
+      border-radius: 8px;
+      padding: 14px;
+      box-shadow: 0 2px 6px rgba(34, 26, 23, 0.05);
+    }
+
+    .panel h2 {
+      margin: 0 0 10px;
+      font-size: 1.05rem;
+      color: #221a17;
+    }
+
+    .panel p {
+      margin: 0;
+      color: #4b4441;
+      line-height: 1.55;
+    }
+
+    .list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .list li {
+      background: #fffdfc;
+      border: 1px solid #ece6e0;
+      border-radius: 8px;
+      padding: 10px;
+      margin-bottom: 10px;
+    }
+
+    .list li strong {
+      display: block;
+      font-size: 1rem;
+      color: #221a17;
+      margin-bottom: 4px;
+    }
+
+    .list li p {
+      margin: 0;
+      font-size: 0.9rem;
+      color: #6b5f5a;
+    }
+
+    .chart {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(56px, 1fr));
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .bar {
+      height: 40px;
+      background: #dcdcd0;
+      border-radius: 4px;
+      position: relative;
+    }
+
+    .bar::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, transparent 0%, #b36b68 100%);
+      border-radius: 4px;
+    }
+
+    .bar.highlight::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, #b36b68 0%, #dcdcd0 100%);
+      border-radius: 4px;
+    }
+
+    .nav {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 12px;
+      border-top: 1px solid #ece6e0;
+    }
+
+    .nav button {
+      padding: 8px 12px;
+      background: #fffdfc;
+      border: 1px solid #ece6e0;
+      border-radius: 8px;
+      color: #221a17;
+      cursor: pointer;
+    }
+
+    .nav button[aria-selected="true"] {
+      background: #b36b68;
+      color: #fffdfc;
+      border-color: #b36b68;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .field {
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 3px;
+      color: #6b5f5a;
+      font-size: 0.84rem;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ece6e0;
+      border-radius: 6px;
+      background: #fffdfc;
+      color: #221a17;
+      font-size: 0.95rem;
+    }
+
+    textarea {
+      resize: vertical;
+    }
+
+    .field input,
+    .field select,
+    .field textarea {
+      margin-top: 2px;
+    }
+
+    .field-row {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .form-buttons {
+      display: flex;
+      gap: 6px;
+      margin-top: 10px;
+    }
+
+    button {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ece6e0;
+      border-radius: 8px;
+      background: #fffdfc;
+      color: #221a17;
+      font-size: 0.95rem;
+      cursor: pointer;
+    }
+
+    button:focus-visible,
+    a:focus-visible,
+    input:focus-visible,
+    select:focus-visible,
+    textarea:focus-visible {
+      outline: 2px solid #b36b68;
+      outline-offset: 2px;
+    }
+
+    .btn-add {
+      margin-bottom: 10px;
+      padding: 10px 12px;
+      background: #b36b68;
+      color: #fffdfc;
+      border: 1px solid #b36b68;
+      border-radius: 8px;
+      font-weight: 700;
+    }
+
+    .btn-add:hover {
+      background: #975657;
+      border-color: #975657;
+    }
+
+    .btn-add:active {
+      background: #834f4f;
+      border-color: #834f4f;
+    }
+
+    .btn-secondary {
+      border: 1px solid #ece6e0;
+      border-radius: 8px;
+      background: #fffdfc;
+      color: #221a17;
+    }
+
+    .btn-secondary:hover {
+      background: #f7f4ef;
+    }
+
+    .btn-secondary:active {
+      background: #ece6e0;
+    }
+
+    .setting {
+      display: block;
+      margin-bottom: 10px;
+    }
+
+    .setting input,
+    .setting select {
+      width: 100%;
+    }
+
+    .setting-row {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .badge {
+      display: inline-block;
+      background: #f4d8c2;
+      color: #221a17;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.78rem;
+    }
+
+    .badge-low {
+      background: #ece6e0;
+      color: #6b5f5a;
+    }
+
+    .chart-bar {
+      height: 36px;
+      background: #b36b68;
+      border-radius: 4px;
+      margin-right: 4px;
+    }
+
+    .chart-bar.smaller {
+      height: 18px;
+      background: #dcdcd0;
+    }
+
+    .chart-bar.highlight {
+      background: #dcdcd0;
+    }
+
+    .chart-bar.highlight::after {
+      background: linear-gradient(90deg, #b36b68 0%, #dcdcd0 100%);
+    }
+
+    .chart-bar::after {
+      background: linear-gradient(90deg, #b36b68 0%, #dcdcd0 100%);
+    }
+
+    .chart-bar-row {
+      display: flex;
+      align-items: flex-end;
+      gap: 6px;
+      height: 44px;
+      margin-top: 10px;
+    }
+
+    .chart-bar-row .chart-bar {
+      width: 22px;
+      height: 36px;
+      background: #b36b68;
+      border-radius: 4px;
+    }
+
+    .chart-bar-row .chart-bar.smaller {
+      width: 22px;
+      height: 20px;
+      background: #dcdcd0;
+    }
+
+    .chart-bar-row .chart-bar.highlight {
+      width: 22px;
+      height: 28px;
+      background: #dcdcd0;
+    }
+
+    .chart-bar-row .chart-bar.highlight::after {
+      background: linear-gradient(90deg, #b36b68 0%, #dcdcd0 100%);
+    }
+
+    .chart-bar-row .chart-bar::after {
+      background: linear-gradient(90deg, #b36b68 0%, #dcdcd0 100%);
+    }
+
+    @media (max-width: 400px) {
+      #app {
+        margin: 12px;
+        padding: 12px;
+      }
+
+      .grid,
+      .field-row,
+      .setting-row {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <header class="topbar">
+      <div>
+        <h1 class="brand">学习提醒</h1>
+        <p class="subtitle">今天帮你把任务理得更有用。</p>
+      </div>
+      <div>
+        <strong id="child-name">小雨</strong>
+      </div>
+    </header>
+
+    <section id="screen-today" class="screen active">
+      <div class="panel">
+        <h2>今日待办</h2>
+        <p id="today-summary">4 个任务，已完成 1 个。</p>
+      </div>
+      <ul id="task-list" class="list"></ul>
+    </section>
+
+    <section id="screen-report" class="screen hidden">
+      <div class="panel">
+        <h2>7 天完成情况</h2>
+        <p>看看孩子的学习趋势。</p>
+      </div>
+      <div>
+        <div class="chart-bar-row">
+          <div class="chart-bar"></div>
+          <div class="chart-bar smaller"></div>
+          <div class="chart-bar highlight"></div>
+          <div class="chart-bar smaller"></div>
+          <div class="chart-bar"></div>
+          <div class="chart-bar smaller"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="screen-projects" class="screen hidden">
+      <div class="panel">
+        <h2>任务清单</h2>
+        <p>新增或修改任务。</p>
+        <button id="btn-add-task" class="btn-add">新增任务</button>
+      </div>
+      <form id="task-form" class="panel hidden">
+        <div class="field">
+          <label for="task-title">任务标题</label>
+          <input type="text" id="task-title" required>
+        </div>
+        <div class="field">
+          <label for="task-subject">科目</label>
+          <select id="task-subject">
+            <option value="语文">语文</option>
+            <option value="数学">数学</option>
+            <option value="英语">英语</option>
+            <option value="体育">体育</option>
+            <option value="兴趣">兴趣</option>
+          </select>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label for="task-time">提醒时间</label>
+            <input type="time" id="task-time" value="19:00" required>
+          </div>
+          <div class="field">
+            <label for="task-minutes">时长 (分钟)</label>
+            <input type="number" id="task-minutes" value="20" min="5" required>
+          </div>
+        </div>
+        <div class="field">
+          <label for="task-repeat">重复</label>
+          <select id="task-repeat">
+            <option value="每天">每天</option>
+            <option value="周一">周一</option>
+            <option value="周三">周三</option>
+            <option value="周五">周五</option>
+            <option value="周六">周六</option>
+            <option value="周日">周日</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="task-note">备注</label>
+          <textarea id="task-note"></textarea>
+        </div>
+        <div class="form-buttons">
+          <button type="submit">保存</button>
+          <button type="button" id="btn-cancel-task" class="btn-secondary">取消</button>
+        </div>
+      </form>
+    </section>
+
+    <section id="screen-settings" class="screen hidden">
+      <div class="panel">
+        <h2>设置</h2>
+        <div class="setting">
+          <label for="setting-child-name">孩子名</label>
+          <input type="text" id="setting-child-name" value="小雨">
+        </div>
+        <div class="setting">
+          <label for="setting-reminder-time">默认提醒时间</label>
+          <input type="time" id="setting-reminder-time" value="19:00">
+        </div>
+        <div class="setting">
+          <label for="setting-reminder-type">提醒方式</label>
+          <select id="setting-reminder-type">
+            <option value="app">应用内提示</option>
+            <option value="push">系统通知</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <footer class="subtitle">HTML demo，还没有接入 Android 本体。</footer>
+
+    <nav class="nav" role="tablist">
+      <button data-target="screen-today" aria-selected="true">今日</button>
+      <button data-target="screen-report">报告</button>
+      <button data-target="screen-projects">任务</button>
+      <button data-target="screen-settings">设置</button>
+    </nav>
+  </div>
+
+  <script>
+    const state = {
+      childName: "小雨",
+      tasks: [
+        { title: "朗读英语", subject: "英语", time: "18:30", minutes: 15, repeat: "每天" },
+        { title: "计算 10 道", subject: "数学", time: "19:00", minutes: 20, repeat: "每天" },
+        { title: "识字 10 个", subject: "语文", time: "19:30", minutes: 15, repeat: "每天" },
+        { title: "古诗背诵", subject: "兴趣", time: "20:00", minutes: 10, repeat: "周五" }
+      ]
+    };
+
+    function render() {
+      const list = document.getElementById("task-list");
+      list.innerHTML = "";
+      state.tasks.forEach(task => {
+        const li = document.createElement("li");
+        li.innerHTML = `<strong>${task.title}</strong><p>${task.subject} · ${task.time}</p>`;
+        list.appendChild(li);
+      });
+      document.getElementById("today-summary").textContent = `${state.tasks.length} 个任务，已完成 1 个。`;
+      document.getElementById("child-name").textContent = state.childName;
+    }
+
+    function switchScreen(target) {
+      document.querySelectorAll(".screen").forEach(screen => screen.classList.add("hidden"));
+      document.getElementById(target).classList.remove("hidden");
+      document.querySelectorAll(".nav button").forEach(button =>
+        button.setAttribute("aria-selected", String(button.dataset.target === target))
+      );
+    }
+
+    document.querySelectorAll(".nav button").forEach(button => {
+      button.addEventListener("click", () => switchScreen(button.dataset.target));
+    });
+
+    document.getElementById("btn-add-task").addEventListener("click", () => {
+      document.getElementById("task-form").classList.remove("hidden");
+    });
+
+    document.getElementById("btn-cancel-task").addEventListener("click", () => {
+      document.getElementById("task-form").classList.add("hidden");
+    });
+
+    document.getElementById("task-form").addEventListener("submit", event => {
+      event.preventDefault();
+      state.tasks.push({
+        title: document.getElementById("task-title").value,
+        subject: document.getElementById("task-subject").value,
+        time: document.getElementById("task-time").value,
+        minutes: parseInt(document.getElementById("task-minutes").value, 10),
+        repeat: document.getElementById("task-repeat").value,
+        note: document.getElementById("task-note").value
+      });
+      render();
+      switchScreen("screen-today");
+      document.getElementById("task-form").reset();
+      document.getElementById("task-form").classList.add("hidden");
+    });
+
+    document.getElementById("setting-child-name").addEventListener("input", event => {
+      state.childName = event.target.value;
+      render();
+    });
+
+    render();
+  </script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">学习提醒</string>
+    <string name="channel_reminder_name">学习提醒</string>
+    <string name="channel_reminder_desc">到点提醒孩子完成学习任务</string>
+    <string name="channel_snooze_name">稍后再提醒</string>
+    <string name="channel_snooze_desc">选择稍后提醒后的二次提醒</string>
+    <string name="channel_reminder_silent_name">学习提醒（静音）</string>
+    <string name="channel_reminder_silent_desc">免打扰模式下不发声的学习提醒</string>
+    <string name="channel_snooze_silent_name">稍后再提醒（静音）</string>
+    <string name="channel_snooze_silent_desc">免打扰模式下不发声的二次提醒</string>
+    <string name="notification_done_action">完成</string>
+    <string name="notification_snooze_action">稍后提醒</string>
+    <string name="notify_permission_banner">通知权限已关闭，提醒将无法送达，点击开启</string>
+    <string name="exact_alarm_banner">精确闹钟权限受限，提醒可能略有延迟</string>
+</resources>
